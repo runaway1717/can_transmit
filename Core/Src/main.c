@@ -43,6 +43,8 @@
 CAN_HandleTypeDef hcan1;
 CAN_HandleTypeDef hcan2;
 
+TIM_HandleTypeDef htim5;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -50,6 +52,7 @@ CAN_HandleTypeDef hcan2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_TIM5_Init(void);
 static void MX_CAN2_Init(void);
 static void MX_CAN1_Init(void);
 /* USER CODE BEGIN PFP */
@@ -58,26 +61,14 @@ static void MX_CAN1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int kunal=0,a=0,b=0,c=0,d=0;
-CAN_RxHeaderTypeDef RxHeader;
-uint8_t RxData[8];
-uint8_t test[8]={0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-  // Get the RX message
-	kunal++;
-//	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,1);
+CAN_TxHeaderTypeDef TxHeader;
+uint32_t TxMailbox;
+uint8_t TxData[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+uint8_t cycle1 = 0;
+uint8_t cycle2 = 0;
+uint8_t cycle3 = 0;
+int a=0,b=0,c=0,d=0;
 
-  if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK) {
-    // Reception Error
-    Error_Handler();
-  }
-  else{ if(RxHeader.StdId==0x321 ){
-//	  HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,1);
-	  a++;
-
-   }
-  }
-}
 /* USER CODE END 0 */
 
 /**
@@ -109,39 +100,46 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM5_Init();
   MX_CAN2_Init();
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
-  if (HAL_CAN_Start(&hcan1) != HAL_OK)
-	      {
-	          Error_Handler();
-	      }
-  if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-      {
-          // Notification Error
-          Error_Handler();
-      }
+
+  HAL_TIM_Base_Start_IT(&htim5);
+  /* USER CODE BEGIN 2 */
+a++;
+  if (HAL_CAN_Start(&hcan2) != HAL_OK) {   // changed hcan1 to hcan2
+
+  Error_Handler();
+  }
+//  if (HAL_CAN_Start(&hcan2) != HAL_OK) {
+//
+//  Error_Handler();
+//  }
+
   else{
-//		  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_11,1);
-//		  HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,1);
-	  c++;
+	  b++;
 
   }
+  HAL_Delay(100);
+	TxHeader.StdId = 0x321;
+	TxHeader.RTR = CAN_RTR_DATA;
+	TxHeader.IDE = CAN_ID_STD;
+	TxHeader.DLC = 8;
+	TxHeader.TransmitGlobalTime = DISABLE;
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//HAL_Delay(10);
-//	  else{
-		  b++;
 
-	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//  }
+  }
   /* USER CODE END 3 */
 }
 
@@ -232,8 +230,6 @@ static void MX_CAN1_Init(void)
      canfilterconfig.SlaveStartFilterBank = 13;  // 13 to 27 are assigned to slave CAN (CAN 2) OR 0 to 12 are assgned to CAN1
 
      HAL_CAN_ConfigFilter(&hcan1, &canfilterconfig);
- //	  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_15,1);
-// 	  HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,1);
   /* USER CODE END CAN1_Init 2 */
 
 }
@@ -261,8 +257,8 @@ static void MX_CAN2_Init(void)
   hcan2.Init.TimeSeg2 = CAN_BS2_4TQ;
   hcan2.Init.TimeTriggeredMode = DISABLE;
   hcan2.Init.AutoBusOff = DISABLE;
-  hcan2.Init.AutoWakeUp = ENABLE;
-  hcan2.Init.AutoRetransmission = ENABLE;
+  hcan2.Init.AutoWakeUp = DISABLE;
+  hcan2.Init.AutoRetransmission = DISABLE;
   hcan2.Init.ReceiveFifoLocked = DISABLE;
   hcan2.Init.TransmitFifoPriority = DISABLE;
   if (HAL_CAN_Init(&hcan2) != HAL_OK)
@@ -284,9 +280,53 @@ static void MX_CAN2_Init(void)
      canfilterconfig.SlaveStartFilterBank = 13;  // 13 to 27 are assigned to slave CAN (CAN 2) OR 0 to 12 are assgned to CAN1
 
      HAL_CAN_ConfigFilter(&hcan2, &canfilterconfig);
- //	  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_15,1);
-// 	  HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,1);
   /* USER CODE END CAN2_Init 2 */
+
+}
+
+/**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+																			// Using for CANTx transmission frequency, Delay of 30msec
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 15999;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = 49;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_DISABLE;
+  sSlaveConfig.InputTrigger = TIM_TS_ITR0;
+  if (HAL_TIM_SlaveConfigSynchro(&htim5, &sSlaveConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+
+  /* USER CODE END TIM5_Init 2 */
 
 }
 
@@ -297,53 +337,52 @@ static void MX_CAN2_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10|GPIO_PIN_11, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : PF7 PF8 PF9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PC10 PC11 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	cycle1++;
+	if(htim == &htim5){
+		c++;
+		cycle2++;
+		  if (HAL_CAN_AddTxMessage(&hcan2, &TxHeader, TxData, &TxMailbox) != HAL_OK) {   //changed hcan1 to hcan2
+			 Error_Handler();
 
+		 }
+		 else{d++;
+
+		 }
+		  cycle3++;
+
+
+	}
+}
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+//	cycle1++;
+//	if(htim == &htim5){
+//		c++;
+//		cycle2++;
+//		  if (HAL_CAN_AddTxMessage(&hcan2, &TxHeader, TxData, &TxMailbox) != HAL_OK) {
+////			 Error_Handler();
+//
+//		 }
+//		 else{d++;
+//
+//		 }
+//		  cycle3++;
+//
+//
+//	}
+//}
 /* USER CODE END 4 */
 
 /**
@@ -355,7 +394,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-  while (1)
+ while (1)
   {
   }
   /* USER CODE END Error_Handler_Debug */

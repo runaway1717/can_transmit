@@ -34,34 +34,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := receiveCANtest
+BUILD_ARTIFACT_NAME := CAN_TRANSMIT
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-receiveCANtest.elf \
+CAN_TRANSMIT.elf \
 
 MAP_FILES += \
-receiveCANtest.map \
+CAN_TRANSMIT.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-receiveCANtest.list \
+CAN_TRANSMIT.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: receiveCANtest.elf secondary-outputs
+main-build: CAN_TRANSMIT.elf secondary-outputs
 
 # Tool invocations
-receiveCANtest.elf receiveCANtest.map: $(OBJS) $(USER_OBJS) C:\Users\kunal\STM32CubeIDE\workspace_1.15.1\receiveCANtest\STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "receiveCANtest.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\kunal\STM32CubeIDE\workspace_1.15.1\receiveCANtest\STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="receiveCANtest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+CAN_TRANSMIT.elf CAN_TRANSMIT.map: $(OBJS) $(USER_OBJS) C:\Users\123ys\OneDrive\Desktop\CAN_TRANSMIT\ (2)\CAN_TRANSMIT\STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "CAN_TRANSMIT.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\123ys\OneDrive\Desktop\CAN_TRANSMIT (2)\CAN_TRANSMIT\STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="CAN_TRANSMIT.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -70,14 +70,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-receiveCANtest.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "receiveCANtest.list"
+CAN_TRANSMIT.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "CAN_TRANSMIT.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout receiveCANtest.elf receiveCANtest.list receiveCANtest.map
+	-$(RM) CAN_TRANSMIT.elf CAN_TRANSMIT.list CAN_TRANSMIT.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
